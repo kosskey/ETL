@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import pandas as pd
-import jaydebeapi
+import psycopg2
 import os
 import list_dir as ld
 
@@ -33,15 +33,15 @@ def execute_query_set(out_local):
                 curs.execute(i)
 
 
-# 1. Подключение к СУБД Oracle на сервере
-conn = jaydebeapi.connect(
-    'oracle.jdbc.driver.OracleDriver',
-    'jdbc:oracle:thin:de1m/test@test:1521/deoracle',
-    ['de1m', 'test'],
-    '/home/de1m/ojdbc8.jar'
+# 1. Подключение к СУБД PostgreSQL на локальном сервере
+conn = psycopg2.connect(
+    dbname='de',
+    user='postgres',
+    password='1',
+    host='localhost'
 )
 curs = conn.cursor()
-conn.jconn.setAutoCommit(False)
+conn.autocommit = False
 
 
 # 2. Запуск скрипта очистки таблиц STG
@@ -74,8 +74,8 @@ if dict_file['term_file'] != '':
 
     curs.execute('insert into de1m.golb_stg_terminals_del(terminal_id) select terminal_id from de1m.golb_stg_terminals')
 
+# c) Перенос "Транзакции"
 if dict_file['trans_file'] != '':
-    # c) Перенос "Транзакции"
     df3 = pd.read_csv(dir + '/' + dict_file['trans_file'], sep=';', header=0, decimal=',')
     df3 = df3.astype(str)
 
